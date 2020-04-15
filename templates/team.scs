@@ -7,10 +7,10 @@ $team_sys_idtf
 
 	<-team_dota;	
 
-    $location ;
-	=>nrel_directror: $directror;
-	=>nrel_manager: $manager;
-	=>nrel_coach: $coach;
+    $location
+	$director
+	$manager
+	$coach
 	=>nrel_created: $created
         (*
             <-sc_node_not_relation;;
@@ -23,5 +23,5 @@ $team_sys_idtf
         *);
 
     
-    $sponsors ;
-    $roster ;;
+    $sponsor
+    =>nrel_roster: $roster;;

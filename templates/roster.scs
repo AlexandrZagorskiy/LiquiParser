@@ -1,0 +1,9 @@
+$roster_sys_idtf
+
+	<-sc_node_not_relation;
+
+	=> nrel_main_idtf:
+        [$roster_idtf_en](* <-lang_en;; *);
+        [$roster_idtf_ru](* <-lang_ru;; *);
+
+$roster;
