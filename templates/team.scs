@@ -1,0 +1,27 @@
+$team_sys_idtf
+
+	<-sc_node_not_relation;
+
+	=> nrel_main_idtf:
+		[$team_main_idtf](* <-lang_en; lang_ru;; *);
+
+	<-team_dota;	
+
+    $location ;
+	=>nrel_directror: $directror;
+	=>nrel_manager: $manager;
+	=>nrel_coach: $coach;
+	=>nrel_created: $created
+        (*
+            <-sc_node_not_relation;;
+            => nrel_main_idtf:
+                [$created_idtf](* <-lang_en; lang_ru;; *);;
+            <- date;;
+            => nrel_date_day: [$created_day];;
+            => nrel_date_month: [$created_month];;
+            => nrel_date_year: [$created_year];;
+        *);
+
+    
+    $sponsors ;
+    $roster ;;

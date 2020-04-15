@@ -1,0 +1,38 @@
+{
+    "id": "Natus Vincere",
+    "location": [
+        "Ukraine"
+    ],
+    "coach": " Mag",
+    "director": " Yevhen Zolotarov",
+    "manager": " Igor Sydorenko",
+    "sponsor": [
+        "1xBet",
+        "Logitech G",
+        "Monster Energy",
+        "OMEN by HP"
+    ],
+    "created": "Organization: 2009-12-17: 2010-10-22",
+    "roster": [
+        {
+            "nickname": " Crystallize",
+            "pos": "1"
+        },
+        {
+            "nickname": " MagicaL",
+            "pos": "2"
+        },
+        {
+            "nickname": " 9pasha",
+            "pos": "3"
+        },
+        {
+            "nickname": " CemaTheSlayer",
+            "pos": "4"
+        },
+        {
+            "nickname": " illias",
+            "pos": "5"
+        }
+    ]
+}
