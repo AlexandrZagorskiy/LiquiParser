@@ -1,0 +1,33 @@
+    
+	<=nrel_with_whom: $contract_idtf
+	(*
+		=> nrel_main_idtf:
+			[Сontract between $player and $team](* <-lang_en;; *);
+			[Контракт между $player и $team](* <-lang_ru;; *);;
+		<-contract;;
+		=>nrel_with_what: $team_idtf;;
+		=>nrel_period: ...
+		(*
+			<-period_of_time;;
+			->rrel_start: $start_date_idtf
+				(*
+					<-sc_node_not_relation;;
+					=> nrel_main_idtf:
+						[$start_date](* <-lang_en; lang_ru;; *);;
+					<- date;;
+					=> nrel_date_day: [$start_day];;
+					=> nrel_date_month: [$start_month];;
+					=> nrel_date_year: [$start_year];;
+				*);;
+			->rrel_end: $end_date_idtf
+				(*
+					<-sc_node_not_relation;;
+					=> nrel_main_idtf:
+						[$end_date](* <-lang_en; lang_ru;; *);;
+					<- date;;
+					=> nrel_date_day: [$end_day];;
+					=> nrel_date_month: [$end_month];;
+					=> nrel_date_year: [$end_year];;
+				*);;
+		*);;
+	*);

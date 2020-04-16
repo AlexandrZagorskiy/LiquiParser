@@ -7,53 +7,81 @@ import os.path
 from liquipediapy.exceptions import RequestsException
 from getpass import getpass
 from string import Template
+import player
+from tools import *
 
-def parse_teams(teams, path="", file_type="scs"):
+def parse_teams(teams, path=""):
+    try:
+        os.mkdir('{}/teams'.format(path))
+    except FileExistsError:
+        pass
     # look files in path directory
     # if files exist ask for update files
     # if not then start writing files
     for team in teams:
-        if os.path.isfile('{}/teams/{}/{}.{}'.format(path, team, team.lower().replace(" ", "_"), file_type)):            
-            print ("Team {} exist, update? [yes/any]".format(team))
-            ans = getpass(prompt="")
+        if os.path.isfile('{}/teams/{}/{}.json'.format(path, team, team.lower().replace(" ", "_"))):            
+            print ("Team {} exist, update json? [yes/any]".format(team))
+            ans = input()
             if ans == "y" or ans == "yes":
-                _create_new_teams([team], path=path, file_type=file_type)
+                roster = _create_new_teams([team], path, create=True)
+
+                print ("Update {} players? [yes/any]".format(team))
+                ans = input()
+                if ans == "y" or ans == "yes":
+                    player.parse_players(roster, path, create=True)
+                else:
+                    player.parse_players(roster, path, create=False)
             else:
-                continue
+                _create_new_teams([team], path, create=False)
 
         else:
             try:
                 os.mkdir('{}/teams/{}'.format(path, team))
             except FileExistsError:
                 pass
-            _create_new_teams([team], path=path)
+            roster = _create_new_teams([team], path, create=True)
+            player.parse_players(roster, path, create=True)
 
-def _create_new_teams(teams, path="", file_type="scs"):
+
+def _create_new_teams(teams, path, create=False):
     # for request to liquipedia
-    dota_obj = dota("Bot for creating knowledge base for OSTIS app (https://github.com/ostis-apps; alexandr_zagorskiy@mail.ru")
+    dota_obj = dota("KB_Parser (https://github.com/Finger228/LiquiParser; alexandr_zagorskiy@mail.ru")
     
     # for every team get json from liquipedia api
     # parse it and get new json with need info
     # then save new json file or .scs files in path directory
+    # return list of players from teams
+
+    players = []
     for team in teams:
-        team_idtf = team.lower().replace(" ", "_")
-        team_info = dota_obj.get_team_info(team, True)
-        team_info = _sort_team_data(team, team_info)
+        team_idtf = get_idtf(team)
         
-        if file_type == "json":            
+        if create == True:
+            team_info = dota_obj.get_team_info(team, True)
+            team_info = _sort_team_data(team, team_info)
+            for player in team_info['roster']:
+                players.append(player['nickname'])  
+
             with open('{}/teams/{}/{}.json'.format(path, team, team_idtf), 'w') as f:
                 f.write(json.dumps(team_info, ensure_ascii=False))
+            print("Json of {} created".format(team))
+                
+        else:
+            with open('{}/teams/{}/{}.json'.format(path, team, team_idtf), 'r') as f:
+                team_info = json.load(f)
+        
+        team_info = _team_json_to_scs(team, team_idtf, team_info)
 
-        elif file_type == "scs":
-            team_info = _team_json_to_scs(team, team_idtf, team_info)
+        with open('{}/teams/{}/{}.scs'.format(path, team, team_idtf), 'w') as r:
+            r.write(team_info[0])
 
-            with open('{}/teams/{}/{}.scs'.format(path, team, team_idtf), 'w') as r:
-                r.write(team_info[0])
+        with open('{}/teams/{}/{}_roster.scs'.format(path, team, team_idtf), 'w') as r:
+            r.write(team_info[1])
 
-            with open('{}/teams/{}/{}_roster.scs'.format(path, team, team_idtf), 'w') as r:
-                r.write(team_info[1])
+        print("scs of {} created".format(team))
 
-        print("create {} team".format(team))
+    return players
+
 
 def _sort_team_data(team, team_info):
     # parse needed fields and create dict for json
@@ -105,33 +133,31 @@ def _sort_team_data(team, team_info):
     
     return team_data
 
+
 def _team_json_to_scs(team, team_idtf, team_info):
     # transform json to .scs files
     # templates of .scs files in /templates/ dir 
     result = []
-    location = [country.lower().replace(" ", "_") for country in team_info['location']]
-    sponsor = [single.lower().replace(" ", "_") for single in team_info['sponsor']]
+    location = [get_idtf(country) for country in team_info['location']]
+    sponsor = [get_idtf(single) for single in team_info['sponsor']]
 
     format_location = ""
     for country in location:
         format_location += '\n\t=>nrel_location: {};'.format(country)
     
-    format_director = "" if team_info['director'] == "" else '\t=>nrel_director: {};'.format(
-        team_info['director'].lower().replace(" ", "_")
+    format_director = "" if team_info['director'] == "" else '=>nrel_director: {};'.format(
+        get_idtf(team_info['director'])
         )
-    format_manager = "" if team_info['manager'] == "" else '\t=>nrel_manager: {};'.format(
-        team_info['manager'].lower().replace(" ", "_")
+    format_manager = "" if team_info['manager'] == "" else '=>nrel_manager: {};'.format(
+        get_idtf(team_info['manager'])
         )
-    format_coach = "" if team_info['coach'] == "" else '\t=>nrel_coach: {};'.format(
-        team_info['coach'].lower().replace(" ", "_")
-        )
-    format_director = "" if team_info['director'] == "" else '\t=>nrel_director: {};'.format(
-        team_info['director'].lower().replace(" ", "_")
+    format_coach = "" if team_info['coach'] == "" else '=>nrel_coach: player_{}_dota;'.format(
+        get_idtf(team_info['coach'])
         )
     
     format_sponsors = ""
     for single in sponsor:
-        format_location += '\n\t=>nrel_sponsor: {};'.format(single)
+        format_sponsors += '\n\t=>nrel_sponsor: {};'.format(single)
 
     with open('templates/team.scs') as f:
         src = Template(f.read())
@@ -156,17 +182,17 @@ def _team_json_to_scs(team, team_idtf, team_info):
 
     roster = ""
     for player in team_info['roster']:
-        player_idtf = player['nickname'].lower().replace(" ", "_")
+        player_idtf = get_idtf(player['nickname'])
         if player['pos'] == "1":
-            roster += '\n\t->rrel_carry_dota: {};'.format(player_idtf)
+            roster += '\n\t->rrel_carry_dota: player_{}_dota;'.format(player_idtf)
         if player['pos'] == "2":
-            roster += '\n\t->rrel_midlaner_dota: {};'.format(player_idtf)
+            roster += '\n\t->rrel_midlaner_dota: player_{}_dota;'.format(player_idtf)
         if player['pos'] == "3":
-            roster += '\n\t->rrel_offlaner_dota: {};'.format(player_idtf)
+            roster += '\n\t->rrel_offlaner_dota: player_{}_dota;'.format(player_idtf)
         if player['pos'] == "4":
-            roster += '\n\t->rrel_semi_support_dota: {};'.format(player_idtf)
+            roster += '\n\t->rrel_semi_support_dota: player_{}_dota;'.format(player_idtf)
         if player['pos'] == "5":
-            roster += '\n\t->rrel_full_support_dota: {};'.format(player_idtf)
+            roster += '\n\t->rrel_full_support_dota: player_{}_dota;'.format(player_idtf)
 
     with open('templates/roster.scs') as f:
         src = Template(f.read())

@@ -8,8 +8,8 @@ $team_sys_idtf
 	<-team_dota;	
 
     $location
-	$director
-	$manager
+    $director
+    $manager
 	$coach
 	=>nrel_created: $created
         (*
